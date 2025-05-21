@@ -1,6 +1,6 @@
 # 1. 选择一个官方 Node.js 运行时作为基础镜像
 # node:18-alpine 或 node:20-alpine 是一个不错的选择，因为它体积较小
-FROM node:18-alpine
+FROM node:20-alpine 
 
 # 2. 在容器内设置工作目录
 WORKDIR /usr/src/app

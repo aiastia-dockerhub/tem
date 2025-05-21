@@ -1,0 +1,26 @@
+version: '3.8' # 指定 docker-compose 文件版本
+
+services:
+  word-filler-app: # 服务名称
+    # build: . # 指示 Docker Compose 使用当前目录的 Dockerfile 来构建镜像
+    # container_name: word_filler_service # 自定义容器名称 (可选)
+    image: aiastia/word-filler-app:latest # <--- 修改这里！
+
+    ports:
+      - "3000:3000" # 将主机的 3000 端口映射到容器的 3000 端口
+    environment:
+      - NODE_ENV=production # 设置环境变量为生产环境
+      - PORT=3000 # 明确指定应用在容器内监听的端口 (server.js 会使用它)
+    # volumes: # (按需取消注释和修改)
+      # 开发时代码热更新挂载 (生产环境通常不使用，代码应构建在镜像内):
+      # - ./server.js:/usr/src/app/server.js
+      # - ./public:/usr/src/app/public
+      # - ./package.json:/usr/src/app/package.json
+      # - ./package-lock.json:/usr/src/app/package-lock.json
+      # 注意: node_modules 目录通常不从主机挂载，以避免与容器内环境冲突。
+
+      # 如果需要持久化或从主机访问 uploads/filled_documents 目录 (用于调试或特定需求):
+      # (但请注意，应用本身会清理这些临时文件)
+      # - ./uploads_host:/usr/src/app/uploads 
+      # - ./filled_documents_host:/usr/src/app/filled_documents
+    restart: unless-stopped # 配置容器的重启策略

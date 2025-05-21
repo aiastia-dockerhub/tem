@@ -1,0 +1,94 @@
+
+# 依赖目录
+# 通常由包管理器 (npm, yarn, pnpm) 管理，不应提交到版本控制
+node_modules/
+jspm_packages/
+
+# 构建输出目录
+# 如果您的项目有构建步骤，将构建产物目录添加到这里
+# 例如:
+# dist/
+# build/
+# out/
+# public/ # 如果 public 目录是由构建过程生成的静态资源
+
+# 日志文件
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 运行时数据，例如 PIDs, Sockets, Lockfiles
+.pids/
+*.pid
+*.seed
+*.pid.lock
+*.sock # Unix Sockets
+
+# 临时文件和目录
+tmp/
+temp/
+*.tmp
+*.swp # Vim swap files
+*.swo # Vim swap files
+
+# 操作系统生成的文件
+.DS_Store # macOS
+Thumbs.db # Windows
+ehthumbs.db # Windows
+Desktop.ini # Windows
+
+# 编辑器和 IDE 配置文件
+# 根据您和团队使用的编辑器/IDE 进行调整
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/ # JetBrains IDEs (WebStorm, IntelliJ, etc.)
+*.iml # JetBrains IDEs
+*.suo # Visual Studio
+*.user # Visual Studio
+*.userosscache # Visual Studio
+*.sln.docstates # Visual Studio
+
+# 测试报告和覆盖率报告
+coverage/
+.nyc_output/
+mochawesome-report/
+*.html # 如果测试报告是 HTML 格式且在项目根目录
+
+# 环境变量文件
+# 通常包含敏感信息，不应提交
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# 特定工具的配置文件或缓存
+.eslintcache
+.prettiercache
+.stylelintcache
+.cache/
+.parcel-cache/ # Parcel bundler
+.next/ # Next.js build output
+.nuxt/ # Nuxt.js build output
+.svelte-kit/ # SvelteKit build output
+.quasar/ # Quasar Framework
+
+# Docker 相关文件 (如果它们是本地生成的且不应共享)
+# Dockerfile 和 docker-compose.yml 通常会提交，但其他本地构建的 Docker 文件可能不需要
+# .dockerignore # .dockerignore 文件本身通常会提交
+
+# 上传和填充的临时文件目录 (根据您之前的项目)
+# 如果这些目录只是本地运行时的临时存储，并且不包含需要版本控制的内容
+uploads/
+filled_documents/
+# 如果您在 docker-compose.yml 中使用了本地挂载的临时目录，也在这里忽略它们
+# uploads_on_host/
+# filled_documents_on_host/

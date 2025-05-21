@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word 文档填充器</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"], textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #4cae4c; }
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .message-success { background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; }
+        .message-error { background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; }
+        .message-processing { background-color: #d9edf7; color: #31708f; border: 1px solid #bce8f1; }
+        .options-separator { margin: 10px 0; text-align: center; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word 文档填充器</h1>
+        <form id="fillForm">
+            <div>
+                <label for="wordFile">1. 上传 Word 模板 (.docx):</label>
+                <input type="file" id="wordFile" name="wordFile" accept=".docx" required>
+            </div>
+
+            <div>
+                <label for="jsonData">2. 输入 JSON 数据:</label>
+                <textarea id="jsonData" name="jsonData" placeholder='例如: { "name": "张三", "city": "北京" }'></textarea>
+            </div>
+
+            <div class="options-separator">或者</div>
+
+            <div>
+                <label for="jsonFile">上传 JSON 文件 (.json):</label>
+                <input type="file" id="jsonFile" name="jsonFile" accept=".json">
+            </div>
+
+            <button type="submit">填充并下载文档</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('fillForm');
+        const wordFileInput = document.getElementById('wordFile');
+        const jsonDataTextarea = document.getElementById('jsonData');
+        const jsonFileInput = document.getElementById('jsonFile');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            messageDiv.textContent = '正在处理...';
+            messageDiv.className = 'message-processing'; // 设置处理中样式
+
+            const formData = new FormData();
+
+            if (wordFileInput.files.length === 0) {
+                showMessage('请选择一个 Word 模板文件。', 'error');
+                return;
+            }
+            formData.append('wordFile', wordFileInput.files[0]);
+
+            const jsonDataFromText = jsonDataTextarea.value.trim();
+            const jsonFile = jsonFileInput.files.length > 0 ? jsonFileInput.files[0] : null;
+
+            if (jsonFile) {
+                formData.append('jsonFile', jsonFile);
+            } else if (jsonDataFromText) {
+                try {
+                    JSON.parse(jsonDataFromText); // 简单验证 JSON 格式
+                    formData.append('jsonData', jsonDataFromText);
+                } catch (e) {
+                    showMessage('文本区域中的 JSON 数据格式无效。', 'error');
+                    return;
+                }
+            } else {
+                showMessage('请提供 JSON 数据 (通过文本区域输入或上传文件)。', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/fill-document', {
+                    method: 'POST',
+                    body: formData
+                    // 注意：当使用 FormData 时，浏览器会自动设置 Content-Type 为 multipart/form-data
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const disposition = response.headers.get('content-disposition');
+                    let filename = 'filled_document.docx'; // 默认文件名
+
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        const filenameRegex = /filename[^;=\n]*=(?:(["'])(.*?)\1|([^;\n]*))/i; // 更健壮的正则
+                        const matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[2]) {
+                            filename = matches[2];
+                        } else if (matches != null && matches[3]) {
+                            filename = matches[3];
+                        }
+                    } else {
+                        // 尝试从 Content-Type 或 URL 获取文件名，如果 Content-Disposition 不可用
+                        // 但对于此场景，Content-Disposition 应该是主要的
+                    }
+
+
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = decodeURIComponent(filename); // 解码文件名
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(link.href); // 释放对象 URL
+                    showMessage('文档已生成并开始下载！', 'success');
+                } else {
+                    const errorData = await response.json(); // 后端应该返回 JSON 格式的错误
+                    showMessage(`错误: ${response.status} - ${errorData.message || '未知错误'}`, 'error');
+                    console.error('错误响应:', errorData);
+                }
+            } catch (error) {
+                showMessage('发生网络错误或服务器无响应: ' + error.message, 'error');
+                console.error('Fetch 错误:', error);
+            } finally {
+                // 清空文件输入框的值，以便用户可以重新选择相同的文件
+                wordFileInput.value = '';
+                jsonFileInput.value = '';
+            }
+        });
+
+        function showMessage(msg, type) {
+            messageDiv.textContent = msg;
+            if (type === 'success') {
+                messageDiv.className = 'message-success';
+            } else if (type === 'error') {
+                messageDiv.className = 'message-error';
+            } else {
+                messageDiv.className = 'message-processing';
+            }
+        }
+    </script>
+</body>
+</html>

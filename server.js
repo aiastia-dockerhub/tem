@@ -88,10 +88,12 @@ app.post('/api/fill-document', upload.fields([{ name: 'wordFile', maxCount: 1 },
             nullGetter: function() { return ""; } // 对于缺失的标签返回空字符串而不是抛出错误
         });
 
-        doc.setData(jsonData);
+        // doc.setData(jsonData);
 
         try {
-            doc.render(); // 执行模板替换
+            // doc.render(); // 执行模板替换
+            doc.render(jsonData); // 执行模板替换
+
         } catch (error) {
             // 捕获 Docxtemplater 的渲染错误，例如标签未找到等
             console.error("Docxtemplater 渲染错误:", error);

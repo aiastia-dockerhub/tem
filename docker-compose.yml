@@ -4,7 +4,7 @@ services:
   word-filler-app: # 服务名称
     # build: . # 指示 Docker Compose 使用当前目录的 Dockerfile 来构建镜像
     # container_name: word_filler_service # 自定义容器名称 (可选)
-    image: aiastia/word-filler-app:latest # <--- 修改这里！
+    image: aiastia/wordfillerapp:latest # <--- 修改这里！
 
     ports:
       - "3000:3000" # 将主机的 3000 端口映射到容器的 3000 端口
